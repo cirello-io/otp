@@ -217,8 +217,8 @@ func get() cli.Command {
 				fmt.Fprintln(
 					w,
 					fmt.Sprintf("%s\t%s\t%vs\t%s",
-						issuer,
 						account,
+						issuer,
 						(30-time.Now().Unix()%30),
 						token),
 				)
@@ -253,7 +253,7 @@ func list() cli.Command {
 			for rows.Next() {
 				var account, issuer string
 				rows.Scan(&account, &issuer)
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s", issuer, account))
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s", account, issuer))
 			}
 
 			return nil
@@ -299,10 +299,10 @@ func genqr() cli.Command {
 
 				qrfn, err := generateQR(issuer, account, string(decrypted))
 				if err != nil {
-					fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", issuer, account, err))
+					fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", account, issuer, err))
 					continue
 				}
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", issuer, account, qrfn))
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", account, issuer, qrfn))
 			}
 
 			return nil
