@@ -1,6 +1,7 @@
 package main // import "cirello.io/otp"
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
@@ -9,6 +10,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"image"
+	"image/png"
 	"io/ioutil"
 	"log"
 	"os"
@@ -24,6 +27,7 @@ import (
 	otp "github.com/hgfischer/go-otp"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/urfave/cli"
+	"rsc.io/qr"
 )
 
 var homeDir string
@@ -80,6 +84,7 @@ func main() {
 		add(),
 		get(),
 		list(),
+		genqr(),
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -256,6 +261,55 @@ func list() cli.Command {
 	}
 }
 
+func genqr() cli.Command {
+	return cli.Command{
+		Name:  "qr",
+		Usage: "generate QR codes",
+		Action: func(c *cli.Context) error {
+			priv, err := privkeyfile(c.GlobalString("private-key"))
+			if err != nil {
+				return err
+			}
+
+			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			if err != nil {
+				return err
+			}
+			defer db.Close()
+
+			rows, err := db.Query("SELECT `account`, `issuer`, `password` FROM `otps` ORDER BY `account` ASC, `issuer` ASC;")
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			w := tabwriter.NewWriter(os.Stdout, 8, 8, 2, ' ', 0)
+			defer w.Flush()
+			fmt.Fprintln(w, "account\tissuer\tfile")
+
+			for rows.Next() {
+				var account, issuer string
+				var pw []byte
+				rows.Scan(&account, &issuer, &pw)
+
+				decrypted, err := priv.decrypted(pw, cryptlabel(account, issuer))
+				if err != nil {
+					return err
+				}
+
+				qrfn, err := generateQR(issuer, account, string(decrypted))
+				if err != nil {
+					fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", issuer, account, err))
+					continue
+				}
+				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", issuer, account, qrfn))
+			}
+
+			return nil
+		},
+	}
+}
+
 type privkey struct {
 	*rsa.PrivateKey
 }
@@ -293,4 +347,30 @@ func (p privkey) decrypted(in, label []byte) ([]byte, error) {
 
 func cryptlabel(account, issuer string) []byte {
 	return []byte(fmt.Sprint(account, issuer))
+}
+
+func generateQR(issuer, account, password string) (string, error) {
+	otpauth := fmt.Sprintf("otpauth://totp/%s:%s?secret=%s&issuer=%s", issuer, account, password, issuer)
+	code, err := qr.Encode(otpauth, qr.H)
+	if err != nil {
+		return "", err
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(code.PNG()))
+	if err != nil {
+		panic(err)
+	}
+
+	fn := fmt.Sprintf("otp-qr-%s-%s.png", issuer, account)
+	out, err := os.Create(fn)
+	if err != nil {
+		return "", err
+	}
+
+	err = png.Encode(out, img)
+	if err != nil {
+		return "", err
+	}
+
+	return fn, nil
 }
