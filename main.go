@@ -85,6 +85,7 @@ func main() {
 		get(),
 		list(),
 		genqr(),
+		rm(),
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -306,6 +307,34 @@ func genqr() cli.Command {
 			}
 
 			return nil
+		},
+	}
+}
+
+func rm() cli.Command {
+	return cli.Command{
+		Name:      "rm",
+		Usage:     "delete a OTP key",
+		ArgsUsage: "`issuer` `account-name`",
+		Action: func(c *cli.Context) error {
+			issuer := c.Args().Get(0)
+			account := c.Args().Get(1)
+
+			switch {
+			case issuer == "":
+				return errors.New("issuer is missing")
+			case account == "":
+				return errors.New("account name is missing")
+			}
+
+			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			if err != nil {
+				return err
+			}
+			defer db.Close()
+
+			_, err = db.Exec("DELETE FROM `otps` WHERE `issuer` = ? AND `account` = ?;", issuer, account)
+			return err
 		},
 	}
 }
