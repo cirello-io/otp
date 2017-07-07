@@ -1,0 +1,43 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "bPEHg0P+7waP4rIXaNW84t9p+is=",
+			"path": "github.com/hgfischer/go-otp",
+			"revision": "ae459b7572ee6c0fe3394a750678aacffd138060",
+			"revisionTime": "2016-04-18T18:06:50Z"
+		},
+		{
+			"checksumSHA1": "Xw+NZqCXiCd9BDoTOGZ2rhnR/pc=",
+			"path": "github.com/mattn/go-sqlite3",
+			"revision": "afb81456924a13f8a8653ac8a8b8d017e8ba37f0",
+			"revisionTime": "2013-12-05T23:55:55Z"
+		},
+		{
+			"checksumSHA1": "rEIS5EfbhPRBasakArGCeOWwY8c=",
+			"path": "github.com/urfave/cli",
+			"revision": "55f715e28c46073d0e217e2ce8eb46b0b45e3db6",
+			"revisionTime": "2016-10-06T03:53:53Z"
+		},
+		{
+			"checksumSHA1": "e45Azo7LgzRZ10Cj5ux0g8K83LA=",
+			"path": "rsc.io/qr",
+			"revision": "48b2ede4844e13f1a2b7ce4d2529c9af7e359fc5",
+			"revisionTime": "2016-11-21T13:34:36Z"
+		},
+		{
+			"checksumSHA1": "2Yac4vxMA7HGWwF8ok6Aee9xlf4=",
+			"path": "rsc.io/qr/coding",
+			"revision": "48b2ede4844e13f1a2b7ce4d2529c9af7e359fc5",
+			"revisionTime": "2016-11-21T13:34:36Z"
+		},
+		{
+			"checksumSHA1": "+FzwQgteDBYRZ1nePvDq1jW44c0=",
+			"path": "rsc.io/qr/gf256",
+			"revision": "48b2ede4844e13f1a2b7ce4d2529c9af7e359fc5",
+			"revisionTime": "2016-11-21T13:34:36Z"
+		}
+	],
+	"rootPath": "cirello.io/otp"
+}
