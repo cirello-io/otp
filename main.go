@@ -1,3 +1,6 @@
+// Command otp manages one-time passwords tokens, protecting them with a local
+// private key (usually $HOME/.ssh/id_rsa) and storing its information in a
+// encrypted db (usually at $HOME/.ssh/auth.db).
 package main // import "cirello.io/otp"
 
 import (
