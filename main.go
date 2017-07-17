@@ -12,8 +12,10 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -86,6 +88,7 @@ func main() {
 		list(),
 		genqr(),
 		rm(),
+		servehttp(),
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -180,54 +183,74 @@ func get() cli.Command {
 		Name:  "get",
 		Usage: "generate OTP",
 		Action: func(c *cli.Context) error {
-			priv, err := privkeyfile(c.GlobalString("private-key"))
-			if err != nil {
-				return err
-			}
+			return load(c, os.Stdout)
+		},
+	}
+}
 
-			db, err := sql.Open("sqlite3", c.GlobalString("db"))
-			if err != nil {
-				return err
-			}
-			defer db.Close()
-
-			rows, err := db.Query("SELECT `account`, `issuer`, `password` FROM `otps` ORDER BY `account` ASC, `issuer` ASC;")
-			if err != nil {
-				return err
-			}
-			defer rows.Close()
-
-			w := tabwriter.NewWriter(os.Stdout, 8, 8, 2, ' ', 0)
-			defer w.Flush()
-			fmt.Fprintln(w, "account\tissuer\texpiration\tcode")
-
-			for rows.Next() {
-				var account, issuer string
-				var pw []byte
-				rows.Scan(&account, &issuer, &pw)
-
-				decrypted, err := priv.decrypted(pw, cryptlabel(account, issuer))
-				if err != nil {
-					return err
-				}
-
-				key := strings.ToUpper(strings.Replace(string(decrypted), " ", "", -1))
-				totp := &otp.TOTP{Secret: key, IsBase32Secret: true}
-				token := totp.Get()
-
-				fmt.Fprintln(
-					w,
-					fmt.Sprintf("%s\t%s\t%vs\t%s",
-						account,
-						issuer,
-						(30-time.Now().Unix()%30),
-						token),
-				)
-			}
-
+func servehttp() cli.Command {
+	return cli.Command{
+		Name:  "http",
+		Usage: "serve OTP",
+		Action: func(c *cli.Context) error {
+			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintln(w, "<html><body><pre>")
+				load(c, w)
+				fmt.Fprintln(w, "</pre></body></html>")
+			})
+			http.ListenAndServe(":9999", nil)
 			return nil
 		},
 	}
+}
+
+func load(c *cli.Context, w io.Writer) error {
+	priv, err := privkeyfile(c.GlobalString("private-key"))
+	if err != nil {
+		return err
+	}
+
+	db, err := sql.Open("sqlite3", c.GlobalString("db"))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT `account`, `issuer`, `password` FROM `otps` ORDER BY `account` ASC, `issuer` ASC;")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	tabw := tabwriter.NewWriter(w, 8, 8, 2, ' ', 0)
+	defer tabw.Flush()
+	fmt.Fprintln(w, "account\tissuer\texpiration\tcode")
+
+	for rows.Next() {
+		var account, issuer string
+		var pw []byte
+		rows.Scan(&account, &issuer, &pw)
+
+		decrypted, err := priv.decrypted(pw, cryptlabel(account, issuer))
+		if err != nil {
+			return err
+		}
+
+		key := strings.ToUpper(strings.Replace(string(decrypted), " ", "", -1))
+		totp := &otp.TOTP{Secret: key, IsBase32Secret: true}
+		token := totp.Get()
+
+		fmt.Fprintln(
+			tabw,
+			fmt.Sprintf("%s\t%s\t%vs\t%s",
+				account,
+				issuer,
+				(30-time.Now().Unix()%30),
+				token),
+		)
+	}
+
+	return nil
 }
 
 func list() cli.Command {
