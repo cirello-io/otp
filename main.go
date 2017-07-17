@@ -68,6 +68,8 @@ func main() {
 	}
 
 	app := cli.NewApp()
+	app.Name = "OTP client"
+	app.Usage = "command interface"
 	app.Version = "1.0.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -191,7 +193,7 @@ func get() cli.Command {
 func servehttp() cli.Command {
 	return cli.Command{
 		Name:  "http",
-		Usage: "serve OTP",
+		Usage: "serve OTP in a HTTP interface",
 		Action: func(c *cli.Context) error {
 			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintln(w, "<html><body><pre>")
