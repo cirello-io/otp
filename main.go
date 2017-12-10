@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/x509"
 	"database/sql"
 	"encoding/pem"
@@ -395,11 +395,11 @@ func privkeyfile(fn string) (*privkey, error) {
 }
 
 func (p privkey) encrypted(in, label []byte) ([]byte, error) {
-	return rsa.EncryptOAEP(sha1.New(), rand.Reader, &p.PublicKey, in, label)
+	return rsa.EncryptOAEP(sha256.New(), rand.Reader, &p.PublicKey, in, label)
 }
 
 func (p privkey) decrypted(in, label []byte) ([]byte, error) {
-	return rsa.DecryptOAEP(sha1.New(), rand.Reader, p.PrivateKey, in, label)
+	return rsa.DecryptOAEP(sha256.New(), rand.Reader, p.PrivateKey, in, label)
 }
 
 func cryptlabel(account, issuer string) []byte {
