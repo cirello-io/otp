@@ -229,7 +229,7 @@ func load(c *cli.Context, w io.Writer) error {
 
 	tabw := tabwriter.NewWriter(w, 8, 8, 2, ' ', 0)
 	defer tabw.Flush()
-	fmt.Fprintln(w, "account\tissuer\texpiration\tcode")
+	fmt.Fprintln(tabw, "account\tissuer\texpiration\tcode")
 
 	for rows.Next() {
 		var account, issuer string
