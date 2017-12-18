@@ -1,3 +1,3 @@
-go get [-u] cirello.io/otp
+go get [-f -u] cirello.io/otp
 
 http://godoc.org/cirello.io/otp
