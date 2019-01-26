@@ -1,0 +1,8 @@
+github.com/hgfischer/go-otp v0.0.0-20160418180650-ae459b7572ee h1:bbuDhBZ3hPl7iH/BASSGc2613xrc8xpdNmmMyQ0131w=
+github.com/hgfischer/go-otp v0.0.0-20160418180650-ae459b7572ee/go.mod h1:SFK84Ci40RFGoz2Ukjr/6KO0Ma31GfQAyWjf+SGb028=
+github.com/mattn/go-sqlite3 v0.0.0-20180218131552-696e2e43cb00 h1:EBBUnaoxrlTrnmwlqJSrPQ2bhkQKPs4vm9nSuaEiqak=
+github.com/mattn/go-sqlite3 v0.0.0-20180218131552-696e2e43cb00/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
+github.com/urfave/cli v0.0.0-20161006035353-55f715e28c46 h1:EztUvugq7AA7F3lYLmtFQyvKdcY5pisPt10DqPjRCL8=
+github.com/urfave/cli v0.0.0-20161006035353-55f715e28c46/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
+rsc.io/qr v0.0.0-20161121133436-48b2ede4844e h1:Frg7zxlTwOGrqQ6f4r58GXqLmZnuxIvZFRRqvFQPJTo=
+rsc.io/qr v0.0.0-20161121133436-48b2ede4844e/go.mod h1:IF+uZjkb9fqyeF/4tlBoynqmQxUoPfWEKh921coOuXs=
