@@ -36,9 +36,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"runtime"
-	"runtime/pprof"
-	"runtime/trace"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -63,27 +60,6 @@ func init() {
 }
 
 func main() {
-	if os.Getenv("OTP_TRACE") != "" {
-		w, err := os.Create("otp.trace")
-		if err != nil {
-			log.Fatal("cannot create application tracing:", err)
-		}
-		err = trace.Start(w)
-		if err != nil {
-			log.Fatal("cannot start application tracing:", err)
-		}
-		defer trace.Stop()
-
-		fcpu, err := os.Create("otp.cpuprofile")
-		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
-		}
-		if err := pprof.StartCPUProfile(fcpu); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
-		}
-		defer pprof.StopCPUProfile()
-	}
-
 	app := cli.NewApp()
 	app.Name = "OTP client"
 	app.Usage = "command interface"
@@ -112,18 +88,6 @@ func main() {
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalf("error: %v", err)
-	}
-
-	if os.Getenv("OTP_TRACE") != "" {
-		fmem, err := os.Create("otp.memprofile")
-		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
-		}
-		runtime.GC() // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(fmem); err != nil {
-			log.Fatal("could not write memory profile: ", err)
-		}
-		fmem.Close()
 	}
 }
 
