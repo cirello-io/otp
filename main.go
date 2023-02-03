@@ -18,6 +18,7 @@
 package main // import "cirello.io/otp"
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
@@ -166,7 +167,22 @@ func get() cli.Command {
 		Name:  "get",
 		Usage: "generate OTP",
 		Action: func(c *cli.Context) error {
-			return load(c, os.Stdout)
+			filter := c.Args().First()
+			if filter == "" {
+				return load(c, os.Stdout)
+			}
+			var buf bytes.Buffer
+			if err := load(c, &buf); err != nil {
+				return err
+			}
+			scanner := bufio.NewScanner(&buf)
+			for scanner.Scan() {
+				line := scanner.Text()
+				if strings.Contains(line, filter) {
+					fmt.Println(scanner.Text())
+				}
+			}
+			return scanner.Err()
 		},
 	}
 }
