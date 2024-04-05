@@ -31,7 +31,6 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -41,8 +40,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	otp "github.com/hgfischer/go-otp"
 	_ "github.com/mattn/go-sqlite3"
+	otp "github.com/pquerna/otp/totp"
 	"github.com/urfave/cli"
 	"rsc.io/qr"
 )
@@ -226,8 +225,10 @@ func load(c *cli.Context, w io.Writer) error {
 	fmt.Fprintln(tabw, "account\tissuer\texpiration\tcode")
 
 	for rows.Next() {
-		var account, issuer string
-		var pw []byte
+		var (
+			account, issuer string
+			pw              []byte
+		)
 		rows.Scan(&account, &issuer, &pw)
 
 		decrypted, err := priv.decrypted(pw, cryptlabel(account, issuer))
@@ -235,18 +236,14 @@ func load(c *cli.Context, w io.Writer) error {
 			return err
 		}
 
-		key := strings.ToUpper(strings.Replace(string(decrypted), " ", "", -1))
-		totp := &otp.TOTP{Secret: key, IsBase32Secret: true}
-		token := totp.Get()
+		key := strings.ToUpper(strings.ReplaceAll(string(decrypted), " ", ""))
+		token, err := otp.GenerateCode(key, time.Now())
+		if err != nil {
+			return err
+		}
 
-		fmt.Fprintln(
-			tabw,
-			fmt.Sprintf("%s\t%s\t%vs\t%s",
-				account,
-				issuer,
-				(30-time.Now().Unix()%30),
-				token),
-		)
+		line := fmt.Sprintf("%s\t%s\t%vs\t%s", account, issuer, (30 - time.Now().Unix()%30), token)
+		fmt.Fprintln(tabw, line)
 	}
 
 	return nil
@@ -322,10 +319,12 @@ func genqr() cli.Command {
 
 				qrfn, err := generateQR(issuer, account, string(decrypted))
 				if err != nil {
-					fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", account, issuer, err))
+					line := fmt.Sprintf("%s\t%s\t%s", account, issuer, err)
+					fmt.Fprintln(w, line)
 					continue
 				}
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", account, issuer, qrfn))
+				line := fmt.Sprintf("%s\t%s\t%s", account, issuer, qrfn)
+				fmt.Fprintln(w, line)
 			}
 
 			return nil
@@ -366,7 +365,7 @@ type privkey struct {
 }
 
 func privkeyfile(fn string) (*privkey, error) {
-	pemdata, err := ioutil.ReadFile(fn)
+	pemdata, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read key file: %s", err)
 	}
