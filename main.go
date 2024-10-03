@@ -40,9 +40,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	otp "github.com/pquerna/otp/totp"
 	"github.com/urfave/cli"
+	_ "modernc.org/sqlite"
 	"rsc.io/qr"
 )
 
@@ -96,7 +96,7 @@ func initdb() cli.Command {
 		Name:  "init",
 		Usage: "initialize the OTP database",
 		Action: func(c *cli.Context) error {
-			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			db, err := sql.Open("sqlite", c.GlobalString("db"))
 			if err != nil {
 				return err
 			}
@@ -149,7 +149,7 @@ func add() cli.Command {
 				return err
 			}
 
-			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			db, err := sql.Open("sqlite", c.GlobalString("db"))
 			if err != nil {
 				return err
 			}
@@ -208,7 +208,7 @@ func load(c *cli.Context, w io.Writer) error {
 		return err
 	}
 
-	db, err := sql.Open("sqlite3", c.GlobalString("db"))
+	db, err := sql.Open("sqlite", c.GlobalString("db"))
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func list() cli.Command {
 		Name:  "list",
 		Usage: "list all keys",
 		Action: func(c *cli.Context) error {
-			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			db, err := sql.Open("sqlite", c.GlobalString("db"))
 			if err != nil {
 				return err
 			}
@@ -291,7 +291,7 @@ func genqr() cli.Command {
 				return err
 			}
 
-			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			db, err := sql.Open("sqlite", c.GlobalString("db"))
 			if err != nil {
 				return err
 			}
@@ -348,7 +348,7 @@ func rm() cli.Command {
 				return errors.New("account name is missing")
 			}
 
-			db, err := sql.Open("sqlite3", c.GlobalString("db"))
+			db, err := sql.Open("sqlite", c.GlobalString("db"))
 			if err != nil {
 				return err
 			}
