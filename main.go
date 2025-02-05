@@ -178,7 +178,8 @@ func get() cli.Command {
 			for scanner.Scan() {
 				line := scanner.Text()
 				if strings.Contains(line, filter) {
-					fmt.Println(scanner.Text())
+					fields := strings.Fields(scanner.Text())
+					fmt.Println(fields[len(fields)-1])
 				}
 			}
 			return scanner.Err()
