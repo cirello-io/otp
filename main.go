@@ -174,12 +174,17 @@ func get() cli.Command {
 			if err := load(c, &buf); err != nil {
 				return err
 			}
+			multiMatch := strings.Index(buf.String(), filter) != strings.LastIndex(buf.String(), filter)
 			scanner := bufio.NewScanner(&buf)
 			for scanner.Scan() {
 				line := scanner.Text()
 				if strings.Contains(line, filter) {
 					fields := strings.Fields(scanner.Text())
-					fmt.Println(fields[len(fields)-1])
+					if multiMatch {
+						fmt.Println(line)
+					} else {
+						fmt.Println(fields[len(fields)-1])
+					}
 				}
 			}
 			return scanner.Err()
